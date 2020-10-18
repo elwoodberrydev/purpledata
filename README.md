@@ -26,39 +26,33 @@ With the new project created, let's serve it up.
 $ ng serve
 ```
 
+**Set Up Fake JSON REST API**
+From within the project folder ('_project/purple-data')
+```
+$ npm install -save json-server
+```
+
+**Create a server folder**
+From within the project create a folder for the server.
+```
+$ mkdir server
+```
+```
+$ cd server
+```
+
+**Create JSON file**
+From within the 'server' folder create 'database.json'.
+```
+$ touch database.json
+```
+
 ---
 
 ### References
+1. [JSON Server](https://github.com/typicode/json-server)
 1. [TypeScript](https://www.typescriptlang.org/)
 1. [NodeJS](https://nodejs.org/en/)
 1. [NPM](https://www.npmjs.com/)
 1. [Angular CLI](https://cli.angular.io/)
 1. [SASS](https://sass-lang.com/documentation/syntax#scss)
-
----
-
-# H1
-## H2
-### H3
-
-**bold text**
-
-*italicized text*
-
-> blockquote
-
-1. First item
-2. Second item
-3. Third item
-
-- First item
-- Second item
-- Third item
-
-`code`
-
----
-
-[title](https://www.example.com)
-
-![alt text](image.jpg)
