@@ -47,6 +47,12 @@ From within the 'server' folder create 'database.json'.
 $ touch database.json
 ```
 
+**Install FakerJS**
+From within the 'server' folder install FakerJS.
+```
+$ npm install faker -save
+```
+
 ---
 
 ### References
@@ -56,3 +62,4 @@ $ touch database.json
 1. [NPM](https://www.npmjs.com/)
 1. [Angular CLI](https://cli.angular.io/)
 1. [SASS](https://sass-lang.com/documentation/syntax#scss)
+1. [faker.js](https://github.com/marak/Faker.js/) - Generate massive amounts of fake data.
