@@ -21,11 +21,11 @@ $ ng new purple-data
 
 **Serve The Project** - With the new project created, let's serve it up.
 ```
-$ ng serve
+$ ng serve -o
 ```
 ---
 
-### Simulating the server
+### Simulating The Server
 
 **Set Up Fake JSON REST API** - From within the project folder ('_project/purple-data')
 ```
@@ -101,8 +101,130 @@ $ npm run generate
 ```
 $ npm run server
 ```
+---
 
+### HttpClient
 
+**Import HttpClientModule** - Import HttpClient into App Module
+```javascript
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import{HttpClientModule}from'@angular/common/http';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+---
+
+### Components
+
+**Home** - Create the home component.
+```javascript
+$ ng generate component home
+```
+
+**About** - Create the about component.
+```javascript
+$ ng generate component about
+```
+---
+
+### Routing
+
+**Update Routing** - Add new components to the App Routing.
+```javascript
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import{HomeComponent}from'./home/home.component';
+import{AboutComponent}from'./about/about.component';
+
+const routes: Routes = [
+  { path: '', redirectTo: 'home', pathMatch: 'full'},
+  { path: 'home', component: HomeComponent },
+  { path: 'about', component: AboutComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+---
+
+### Angular Material
+
+**Add** - Add Angular Material to the project.
+ - Indigo/Pink
+ - Global Angular Material typography
+ - Browser animations
+```
+$ ng add @angular/material
+```
+
+**Update Style** - Add the following to the root stylesheet
+```css
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+```
+
+**Components** - Add Angular Material components to App Module
+```javascript
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+```
+
+**Imports** - Add the Angual Material components to the imports array in the App Module.
+```javascript
+@NgModule({
+  declarations: [
+    AppComponent,
+    HomeComponent,
+    AboutComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatButtonModule,
+    MatCardModule,
+    MatProgressSpinnerModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+**HTML** - Update the app component HTML
+```HTML
+<mat-toolbar color="primary">
+  <h1>Purple Data Project</h1>
+  <button mat-button routerLink="/">Home</button>
+  <button mat-button routerLink="/about">About</button>
+</mat-toolbar>
+
+<router-outlet></router-outlet>
+```
 ---
 
 ### References
@@ -114,3 +236,4 @@ $ npm run server
 1. [SASS](https://sass-lang.com/documentation/syntax#scss)
 1. [faker.js](https://github.com/marak/Faker.js/) - Generate massive amounts of fake data.
 1. [JSON Server](https://www.npmjs.com/package/json-server)
+1. [Angular Material](https://material.angular.io/)
