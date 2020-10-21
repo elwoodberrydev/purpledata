@@ -616,6 +616,87 @@ public lastPage() {
 
 ---
 
+### Typed HTTP Response
+
+**New Interface** - Generate a new interface
+```
+$ ng generate interface product
+```
+
+**Update New Interface** - Update the type expectations of the interface.
+```javascript
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+}
+```
+
+**Update Data Service** - Update the HttpClient.get() type parameter
+```javascript
+import { Product } from './product';
+
+...
+
+public sendGetRequest(){
+  return this.httpClient.get<Product[]>(
+    this.REST_API_SERVER, {
+      params:new HttpParams ( {
+        fromString: "_page=1&_limit=20"
+      }), observe:"response"
+    }).pipe(retry(3), catchError ( this.handleError ), tap( res => {
+      console.log( res.headers.get('Link') );
+      this.parseLinkHeader( res.headers.get('Link'));
+  }));
+}
+
+...
+
+public sendGetRequestToUrl( url: string ){
+  return this.httpClient.get<Product[]>(
+    url,
+    { observe: "response" } ).pipe( retry(3),
+    catchError( this.handleError ),
+    tap( res => {
+    console.log( res.headers.get('Link') );
+    this.parseLinkHeader( res.headers.get('Link') );
+  }));
+}
+
+```
+
+**Update Home Component** -
+```javascript
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Product } from '../product';
+
+...
+
+export class HomeComponent implements OnInit, OnDestroy {
+  products:Product[] = [];
+
+  ...
+
+}
+
+...
+
+ngOnInit() {
+  this.dataService.sendGetRequest()
+  .pipe( takeUntil( this.destroy$ ) )
+  .subscribe( (res:HttpResponse<Product[]> ) => {
+    console.log(res);
+    this.products = res.body;
+  })
+}
+
+```
+
+---
+
 ### References
 1. [JSON Server](https://github.com/typicode/json-server)
 1. [TypeScript](https://www.typescriptlang.org/)

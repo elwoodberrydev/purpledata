@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DataService } from '../data.service';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
+import { Product } from '../product';
 
 @Component({
   selector: 'app-home',
@@ -10,15 +11,17 @@ import { HttpResponse } from '@angular/common/http';
   styleUrls: ['./home.component.scss']
 })
 
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
-  public products = []; //
+  public products:Product[] = []; //
   public destroy$: Subject<boolean> = new Subject<boolean>(); // used as the notifier of the takeUntil() operator.
 
   constructor( private dataService:DataService ) { }
 
   ngOnInit() {
-    this.dataService.sendGetRequest().pipe(takeUntil(this.destroy$)).subscribe( ( res: HttpResponse<any> ) => {
+    this.dataService.sendGetRequest()
+    .pipe( takeUntil( this.destroy$ ) )
+    .subscribe( (res:HttpResponse<Product[]> ) => {
       console.log(res);
       this.products = res.body;
     })
@@ -37,7 +40,7 @@ export class HomeComponent implements OnInit {
     this.dataService.sendGetRequestToUrl(
       this.dataService.first)
       .pipe(takeUntil(this.destroy$))
-      .subscribe( ( res:HttpResponse<any> ) => {
+      .subscribe( ( res:HttpResponse<Product[]> ) => {
         console.log(res);
         this.products = res.body;
       })
@@ -49,7 +52,7 @@ export class HomeComponent implements OnInit {
       this.products = [];
       this.dataService.sendGetRequestToUrl(this.dataService.prev)
         .pipe(takeUntil(this.destroy$))
-        .subscribe( ( res:HttpResponse<any> ) => {
+        .subscribe( ( res:HttpResponse<Product[]> ) => {
           console.log(res);
           this.products = res.body;
         })
@@ -62,7 +65,7 @@ export class HomeComponent implements OnInit {
       this.products = [];
       this.dataService.sendGetRequestToUrl(this.dataService.next)
         .pipe(takeUntil(this.destroy$))
-        .subscribe( ( res:HttpResponse<any> ) => {
+        .subscribe( ( res:HttpResponse<Product[]> ) => {
           console.log(res);
           this.products = res.body;
         })
@@ -74,7 +77,7 @@ export class HomeComponent implements OnInit {
     this.products = [];
     this.dataService.sendGetRequestToUrl(this.dataService.last)
     .pipe(takeUntil(this.destroy$))
-    .subscribe( ( res:HttpResponse<any> ) => {
+    .subscribe( ( res:HttpResponse<Product[]> ) => {
       console.log(res);
       this.products = res.body;
     })
