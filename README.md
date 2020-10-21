@@ -15,8 +15,10 @@ Test driven developed (tdd) Angular project.
 1. [Error Handling](https://github.com/elwoodberrydev/purpledata#error-handling)
 1. [Retrying Failed HTTP Requests](https://github.com/elwoodberrydev/purpledata#retrying-failed-http-requests)
 1. [Unsubscribing](https://github.com/elwoodberrydev/purpledata#unsubscribing-from-httpclient)
+1. [Query Parameters](https://github.com/elwoodberrydev/purpledata#query-parameters)
+1. [Full HttpResponse](https://github.com/elwoodberrydev/purpledata#full-httpresponse)
 
-1. [References](https://github.com/typicode/json-server)
+1. [References](https://github.com/elwoodberrydev/purpledata#references)
 
 ---
 
@@ -415,6 +417,201 @@ export class HomeComponent implements OnInit {
   }
 
 }
+```
+---
+
+### Query Parameters
+Adding the logic for implementing pagination in our example application.
+
+**Update Imports** -
+```javascript
+import { HttpClient, HttpErrorResponse, HttpParams } from "@angular/common/http";
+```
+
+**Update Send GET** -
+```javascript
+public sendGetRequest(){
+  const options = { params: new HttpParams( { fromString: "_- page=1&_limit=20"} ) };
+  return this.httpClient.get( this.REST_API_SERVER, options ).pipe( retry(3), catchError( this.handleError ) );
+}
+```
+
+---
+
+### Full HttpResponse
+
+**Update Imports** - Add the 'tap()'
+```javascript
+import { retry, catchError, tap } from 'rxjs/operators';
+```
+
+**New Variables** -
+```javascript
+public first: string = "";
+public prev: string = "";
+public next: string = "";
+public last: string = "";
+```
+
+**parseLinkHeader** - Parse the Link header and populate the previous variables accordingly
+```javascript
+parseLinkHeader( header ) {
+  //
+  if (header.length == 0) {
+    return ;
+  }
+
+  //
+  let parts = header.split(',');
+  var links = {};
+
+  //
+  parts.forEach( p => {
+    let section = p.split(';');
+    var url = section[0].replace(/<(.*)>/, '$1').trim();
+    var name = section[1].replace(/rel="(.*)"/, '$1').trim();
+    links[name] = url;
+  });
+
+  //
+  this.first = links["first"];
+  this.last = links["last"];
+  this.prev = links["prev"];
+  this.next = links["next"];
+
+}
+```
+
+**Update sendGetRequest()** -
+```javascript
+public sendGetRequest(){
+  // Add safe, URL encoded _page and _limit parameters
+  return this.httpClient.get(
+    this.REST_API_SERVER, {
+      params: new HttpParams( {
+        fromString: "_page=1&_limit=20"
+      }),observe: "response"
+    }).pipe( retry(3), catchError( this.handleError ), tap( res => {
+      console.log( res.headers.get('Link') );
+      this.parseLinkHeader(res.headers.get('Link'));
+      }));
+}
+```
+
+**Update Home Component** -
+```javascript
+ngOnInit() {
+  this.dataService.sendGetRequest().pipe(takeUntil(this.destroy$)).subscribe( ( res: HttpResponse<any> ) => {
+    console.log(res);
+    this.products = res.body;
+  })
+}
+```
+
+**Update Data Service** - takes the URL to which we need to send an HTTP GET request.
+```javascript
+public sendGetRequestToUrl( url: string ){
+  return this.httpClient.get(
+    url,
+    { observe: "response" } ).pipe( retry(3),
+    catchError( this.handleError ),
+    tap( res => {
+      console.log( res.headers.get('Link') );
+      this.parseLinkHeader( res.headers.get('Link') );
+    }));
+}
+```
+
+**Update Home Component** - First Page
+```javascript
+public firstPage() {
+  this.products = [];
+  this.dataService.sendGetRequestToUrl(
+    this.dataService.first)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe( ( res:HttpResponse<any> ) => {
+      console.log(res);
+      this.products = res.body;
+    })
+}
+```
+
+**Update Home Component** - Previous Page
+```javascript
+public previousPage() {
+  if(this.dataService.prev!==undefined&&this.dataService.prev!==''){
+    this.products = [];
+    this.dataService.sendGetRequestToUrl(this.dataService.prev)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe( ( res:HttpResponse<any> ) => {
+        console.log(res);
+        this.products = res.body;
+      })
+  }
+}
+```
+
+
+**Update Home Component** - Next Page
+```javascript
+public nextPage() {
+  if (this.dataService.next !== undefined && this.dataService.next !== '') {
+    this.products = [];
+    this.dataService.sendGetRequestToUrl(this.dataService.next)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe( ( res:HttpResponse<any> ) => {
+        console.log(res);
+        this.products = res.body;
+      })
+  }
+}
+```
+
+**Update Home Component** - Last Page
+```javascript
+public lastPage() {
+  this.products = [];
+  this.dataService.sendGetRequestToUrl(this.dataService.last)
+  .pipe(takeUntil(this.destroy$))
+  .subscribe( ( res:HttpResponse<any> ) => {
+    console.log(res);
+    this.products = res.body;
+  })
+}
+```
+
+
+**Update Home HTML** -
+```HTML
+<div style = "padding:13px;">
+
+  <mat-spinner *ngIf = "products.length === 0"></mat-spinner>
+
+  <mat-card *ngFor = "let product of products" style = "margin-top:10px;">
+
+    <mat-card-header>
+      <mat-card-title>#{{product.id}} {{product.name}}</mat-card-title>
+      <mat-card-subtitle>{{product.price}} $/ {{product.quantity}}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <p>{{product.description}}</p>
+      <img style = "height:100%; width: 100%;" src = "{{ product.imageUrl }}" />
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-button>Buy product</button>
+    </mat-card-actions>
+
+  </mat-card>
+
+</div>
+<div>
+  <button (click) ="firstPage()" mat-button> First</button>
+  <button (click) ="previousPage()" mat-button> Previous</button>
+  <button (click) ="nextPage()" mat-button> Next</button>
+  <button (click) ="lastPage()" mat-button> Last</button>
+</div>
 ```
 
 ---
