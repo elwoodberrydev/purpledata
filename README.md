@@ -3,12 +3,25 @@
 # Purple Data Project
 Test driven developed (tdd) Angular project.
 
+### Table Of Contents
+1. [Prerequisites](https://github.com/elwoodberrydev/purpledata#prerequisites)
+1. [Getting Started](https://github.com/elwoodberrydev/purpledata#getting-started)
+1. [Simulating The Server](https://github.com/elwoodberrydev/purpledata#simulating-the-server)
+1. [HttpClient](https://github.com/elwoodberrydev/purpledata#httpclient)
+1. [Components](https://github.com/elwoodberrydev/purpledata#components)
+1. [Routing](https://github.com/elwoodberrydev/purpledata#routing)
+1. [Angular Material](https://github.com/elwoodberrydev/purpledata#angular-material)
+1. [Services](https://github.com/elwoodberrydev/purpledata#services)
+
+1. [References](https://github.com/typicode/json-server)
+
+---
+
 ### Prerequisites
 1. Object Oriented concepts such as TypeScript classes and decorators.
 2. Node v13.11.0
 3. NPM 6.14.8
 3. Angular CLI v10.1.7
-3. SCSS
 
 ---
 
@@ -225,6 +238,100 @@ export class AppModule { }
 
 <router-outlet></router-outlet>
 ```
+
+---
+
+### Services
+
+**Create Service** -
+```
+$ ng generate service data
+```
+
+**Define Data Service** -
+```javascript
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Injectable({
+  providedIn: 'root'
+})
+
+export class DataService {
+
+  private REST_API_SERVER = "http://localhost:3000/products"; // Holds the address of our REST API server
+
+  constructor( private httpClient: HttpClient ){}
+
+  // Sends a GET request to the REST API endpoint to retrieve JSON data
+  // Invokes the get() method of HttpClient to send GET requests to the REST API server.
+  public sendGetRequest(){
+    return this.httpClient.get(this.REST_API_SERVER);
+  }
+
+}
+```
+
+**Update Component** - Update the 'Home' component
+```javascript
+import { Component, OnInit } from '@angular/core';
+import { DataService } from '../data.service';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
+})
+export class HomeComponent implements OnInit {
+
+  public products=[]; //
+
+  constructor( private dataService:DataService ) { }
+
+  ngOnInit(){
+    this.dataService.sendGetRequest().subscribe( ( data:any[] ) => {
+
+      console.log( data );
+
+      this.products = data;
+
+    })
+  }
+
+}
+```
+
+**HTML** - Update the 'Home' HTML
+```HTML
+<div style = "padding:13px;">
+
+  <mat-spinner *ngIf = "products.length === 0"></mat-spinner>
+
+  <mat-card *ngFor = "let product of products" style = "margin-top:10px;">
+
+    <mat-card-header>
+      <mat-card-title>{{product.name}}</mat-card-title>
+      <mat-card-subtitle>{{product.price}} $/ {{product.quantity}}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <p>{{product.description}}</p>
+      <img style = "height:100%; width: 100%;" src = "{{ product.imageUrl }}" />
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-button>Buy product</button>
+    </mat-card-actions>
+
+  </mat-card>
+
+</div>
+```
+
+#### ERRORS
+> Can't bind to 'ngFor' since it isn't a known property of 'mat-card'.
+
+
 ---
 
 ### References
