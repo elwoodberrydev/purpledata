@@ -12,6 +12,9 @@ Test driven developed (tdd) Angular project.
 1. [Routing](https://github.com/elwoodberrydev/purpledata#routing)
 1. [Angular Material](https://github.com/elwoodberrydev/purpledata#angular-material)
 1. [Services](https://github.com/elwoodberrydev/purpledata#services)
+1. [Error Handling](https://github.com/elwoodberrydev/purpledata#error-handling)
+1. [Retrying Failed HTTP Requests](https://github.com/elwoodberrydev/purpledata#retrying-failed-http-requests)
+1. [Unsubscribing](https://github.com/elwoodberrydev/purpledata#unsubscribing)
 
 1. [References](https://github.com/typicode/json-server)
 
@@ -327,10 +330,92 @@ export class HomeComponent implements OnInit {
 
 </div>
 ```
+---
 
-#### ERRORS
-> Can't bind to 'ngFor' since it isn't a known property of 'mat-card'.
+### Error Handling
 
+**Update Imports** - Update the data service imports
+```javascript
+import { Injectable } from '@angular/core';
+import { HttpClient,HttpErrorResponse } from '@angular/common/http';
+import { throwError } from 'rxjs';
+import { retry,catchError } from 'rxjs/operators';
+```
+
+**Handle Errors** - Check if an error is an instance of ErrorEvent to get the type of the error.
+ - See [HttpInterceptor](https://angular.io/api/common/http/HttpInterceptor) for global error handling.
+```javascript
+
+// ... Constructor code
+
+handleError(error: HttpErrorResponse) {
+  let errorMessage = 'Unknown error!';
+
+  if ( error.error instanceof ErrorEvent ) {
+    // Client-side errors
+    errorMessage = `Error: ${error.error.message}`;
+  } else {
+    // Server-side errors
+    errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+  }
+
+  window.alert(errorMessage);
+  return throwError(errorMessage);
+}
+
+// ... Send GET Request code
+
+```
+---
+
+### Retrying Failed HTTP Requests
+The RxJS library provides several retry operators.
+
+**retry()** - Allows you to automatically re-subscribe to an RxJS Observable a specified number of times.
+```javascript
+public sendGetRequest(){
+  return this.httpClient.get(this.REST_API_SERVER).pipe(retry(3), catchError(this.handleError));
+}
+```
+---
+
+### Unsubscribing from HttpClient
+**Home Component** -
+```javascript
+import { Component, OnInit } from '@angular/core';
+import { DataService } from '../data.service';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
+})
+
+export class HomeComponent implements OnInit {
+
+  public products = []; //
+  public destroy$: Subject<boolean> = new Subject<boolean>();
+
+  constructor( private dataService:DataService ) { }
+
+  ngOnInit(){
+    this.dataService.sendGetRequest().pipe( takeUntil( this.destroy$ ) ).subscribe( ( data:any[] ) => {
+      console.log( data );
+      this.products = data;
+    })
+  }
+
+  //
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    // Unsubscribe from the subject
+    this.destroy$.unsubscribe();
+  }
+
+}
+```
 
 ---
 
