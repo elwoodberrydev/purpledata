@@ -14,7 +14,7 @@ Test driven developed (tdd) Angular project.
 1. [Services](https://github.com/elwoodberrydev/purpledata#services)
 1. [Error Handling](https://github.com/elwoodberrydev/purpledata#error-handling)
 1. [Retrying Failed HTTP Requests](https://github.com/elwoodberrydev/purpledata#retrying-failed-http-requests)
-1. [Unsubscribing](https://github.com/elwoodberrydev/purpledata#unsubscribing)
+1. [Unsubscribing](https://github.com/elwoodberrydev/purpledata#unsubscribing-from-httpclient)
 
 1. [References](https://github.com/typicode/json-server)
 
